@@ -1,5 +1,18 @@
 import pdfplumber
 from . import extract_utils as eu
+from docx import Document
+
+
+def extract_text_from_docx(file_path):
+    document = Document(file_path)
+    mul_col = eu.table_document(document)
+
+    if mul_col:
+        return mul_col
+    else:
+        full_doc = [paragraph.text for paragraph in document.paragraphs]
+
+        return "\n".join(full_doc)
 
 
 def extract_text_from_pdf(file_path):

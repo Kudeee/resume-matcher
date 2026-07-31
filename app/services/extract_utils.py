@@ -1,6 +1,19 @@
 import numpy as np
 
 
+def table_document(document):
+    if document.tables:
+        full_text = []
+        if document.tables:
+            for table in document.tables:
+                for row in table.rows:
+                    for cell in row.cells:
+                        full_text.append(cell.text)
+        return "\n".join(full_text)
+    else:
+        return False
+
+
 def find_column_boundary(page, resolution=2, min_rows=3):
     words = page.extract_words()
     if not words:
