@@ -8,8 +8,9 @@ def table_document(document):
             for table in document.tables:
                 for row in table.rows:
                     for cell in row.cells:
-                        full_text.append(cell.text)
-        return "\n".join(full_text)
+                        for para in cell.paragraphs:
+                            full_text.append(para.text)
+        return full_text
     else:
         return False
 
