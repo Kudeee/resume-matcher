@@ -2,14 +2,13 @@ import numpy as np
 
 
 def table_document(document):
+    full_text = []
     if document.tables:
-        full_text = []
-        if document.tables:
-            for table in document.tables:
-                for row in table.rows:
-                    for cell in row.cells:
-                        for para in cell.paragraphs:
-                            full_text.append(para.text)
+        for table in document.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    for para in cell.paragraphs:
+                        full_text.append(para.text)
         return full_text
     else:
         return False
