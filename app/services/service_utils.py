@@ -1,5 +1,13 @@
 import numpy as np
+import re
 
+def jd_splitter(jd):
+    text = re.sub(r'\n+', '\n', jd)
+    clean_text = re.split(r'(?<=[-*•j])\s+', text)
+
+    lines = [line.replace('\n', ' ').rstrip('-–—•*') for line in clean_text]
+
+    return lines
 
 def table_document(document):
     full_text = []
