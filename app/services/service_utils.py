@@ -1,14 +1,95 @@
 import numpy as np
 import re
+from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS, TfidfVectorizer
+
+
+def _normalize(text):
+    text = text.lower().replace('-', ' ').replace('/', ' ')
+    text = re.sub(r"[^\w\s]", ' ', text)
+
+    return text.split()
+
+
+def custom_stop_words():
+    custom_words = ENGLISH_STOP_WORDS.union(
+        ['responsibilities', 'requirements', 'qualifications', 'duties', 'description',
+         'overview', 'summary', 'role', 'position', 'title', 'apply', 'application',
+         'applicant', 'candidate', 'candidates', 'resume', 'cv', 'submit', 'please',
+         'contact', 'strong', 'excellent', 'proven', 'demonstrated', 'ability',
+         'abilities', 'good', 'great', 'highly', 'effective', 'efficient', 'various',
+         'wide', 'range', 'company', 'organization', 'team', 'environment', 'culture',
+         'mission', 'opportunity', 'opportunities', 'join', 'growing', 'dynamic',
+         'fast-paced', 'salary', 'benefits', 'employer', 'employment', 'equal',
+         'disability', 'veteran', 'race', 'religion', 'sex', 'discriminate',
+         'discrimination', 'years', 'minimum', 'preferred', 'required', 'must',
+         'needed', 'plus', 'experience', 'work', 'working', 'services',
+         'communication', 'collaboration', 'sense', 'ownership', 'skills',
+         'problem-solving', 'collaborate', 'closely', 'tool', 'tools', 'tooling',
+         'cross-functional', 'lifecycle', 'job', 'posting', 'test', 'testing',
+         'listing', 'vacancy', 'hiring', 'recruiter', 'recruitment', 'technical',
+         'seeking', 'looking', 'ideal', 'solid', 'teams', 'growth', 'tooling',
+         'email', 'cover', 'letter', 'interview', 'hr', 'practical', 'equivalent',
+         'passionate', 'motivated', 'self-starter', 'detail-oriented', 'results-driven',
+         'driven', 'innovative', 'creative', 'exceptional', 'outstanding', 'talented',
+         'world-class', 'cutting-edge', 'industry-leading', 'top', 'best',
+         'values', 'vision', 'workplace', 'colleagues', 'people', 'mission-driven',
+         'color', 'origin', 'national', 'sexual', 'orientation', 'gender', 'identity',
+         'protected', 'status', 'harassment', 'compliance', 'eligibility', 'eligible',
+         'sponsorship', 'visa', 'science', 'systems',
+         'ensure', 'ensuring', 'including', 'include', 'includes', 'help', 'helping',
+         'support', 'supporting', 'using', "team's", 'understanding', 'write',
+         ])
+    return list(custom_words)
+
 
 def jd_splitter(jd):
     text = re.sub(r'\n+', '\n', jd)
-    clean_text = re.split(r'(?<=[-*•j])\s+', text)
+    clean_text = re.split(r'(?<=[-*•])\s+', text)
 
     lines = [line.replace('\n', ' ').rstrip('-–—•*') for line in clean_text]
 
     return lines
 
+
+def match_taxonomy(text, reverse_lookup, max_len):
+    tokens = _normalize(text)
+    hits = {}
+    i, n = 0, len(tokens)
+
+    while i < n:
+        matched = False
+
+        for length in range(min(max_len, n - i), 0, -1):
+            span = tuple(tokens[i:i + length])
+
+            if span in reverse_lookup:
+                canonical, category = reverse_lookup[span]
+                hits[canonical] = category
+                i += length
+                matched = True
+                break
+
+        if not matched:
+            i += 1
+    return hits
+
+
+def get_top_word(jd):
+    splitted_jd = jd_splitter(jd)
+
+    vectorizer = TfidfVectorizer(ngram_range=(1, 3), stop_words=custom_stop_words(),
+                                 token_pattern=r"(?u)\b\w+(?:[-/+#'][\w+]+)*\b", norm=None)
+    vector = vectorizer.fit_transform(splitted_jd)
+
+    flatten_vec = vector.toarray().sum(axis=0)
+    idx = np.argsort(flatten_vec)
+    feature_name = vectorizer.get_feature_names_out()
+    top_word = feature_name[idx[-20:]]
+
+    return top_word
+
+
+# utils for parser
 def table_document(document):
     full_text = []
     if document.tables:
@@ -31,7 +112,7 @@ def find_column_boundary(page, resolution=2, min_rows=3):
     for w in words:
         start = int(w["x0"] // resolution)
         end = int(w["x1"] // resolution)
-        covered[start : end + 1] = True
+        covered[start: end + 1] = True
 
     mid_start = int(page.width * 0.3 // resolution)
     mid_end = int(page.width * 0.7 // resolution)
