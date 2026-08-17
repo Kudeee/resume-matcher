@@ -1,5 +1,5 @@
 import pdfplumber
-from . import extract_utils as eu
+from . import service_utils as eu
 from docx import Document
 
 
