@@ -3,9 +3,9 @@ import re
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS, TfidfVectorizer
 
 
-def _normalize(text):
-    text = text.lower().replace('-', ' ').replace('/', ' ')
-    text = re.sub(r"[^\w\s]", ' ', text)
+def normalize(text):
+    text = text.lower().replace('-', ' ').replace('/', ' ').replace('—', ' ')
+    text = re.sub(r"[^\w\s+#]", ' ', text)
 
     return text.split()
 
@@ -49,44 +49,6 @@ def jd_splitter(jd):
     lines = [line.replace('\n', ' ').rstrip('-–—•*') for line in clean_text]
 
     return lines
-
-
-def match_taxonomy(text, reverse_lookup, max_len):
-    tokens = _normalize(text)
-    hits = {}
-    i, n = 0, len(tokens)
-
-    while i < n:
-        matched = False
-
-        for length in range(min(max_len, n - i), 0, -1):
-            span = tuple(tokens[i:i + length])
-
-            if span in reverse_lookup:
-                canonical, category = reverse_lookup[span]
-                hits[canonical] = category
-                i += length
-                matched = True
-                break
-
-        if not matched:
-            i += 1
-    return hits
-
-
-def get_top_word(jd):
-    splitted_jd = jd_splitter(jd)
-
-    vectorizer = TfidfVectorizer(ngram_range=(1, 3), stop_words=custom_stop_words(),
-                                 token_pattern=r"(?u)\b\w+(?:[-/+#'][\w+]+)*\b", norm=None)
-    vector = vectorizer.fit_transform(splitted_jd)
-
-    flatten_vec = vector.toarray().sum(axis=0)
-    idx = np.argsort(flatten_vec)
-    feature_name = vectorizer.get_feature_names_out()
-    top_word = feature_name[idx[-20:]]
-
-    return top_word
 
 
 # utils for parser

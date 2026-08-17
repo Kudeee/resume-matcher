@@ -1,6 +1,6 @@
 import json
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 import app.services.service_utils as utils
 from pathlib import Path
 
@@ -16,16 +16,54 @@ _MAX_LEN = 1
 for _category, _entries in _taxonomy.items():
     for _entry in _entries:
         for _form in [_entry['canonical']] + _entry.get('aliases', []):
-            _tokens = tuple(utils._normalize(_form))
+            _tokens = tuple(utils.normalize(_form))
 
             if _tokens:
                 _REVERSE_LOOKUP[_tokens] = (_entry['canonical'], _category)
                 _MAX_LEN = max(_MAX_LEN, len(_tokens))
 
 
+def match_taxonomy(text):
+    tokens = utils.normalize(text)
+    hits = {}
+    i, n = 0, len(tokens)
+
+    while i < n:
+        matched = False
+
+        for length in range(min(_MAX_LEN, n - i), 0, -1):
+            span = tuple(tokens[i:i + length])
+
+            if span in _REVERSE_LOOKUP:
+                canonical, category = _REVERSE_LOOKUP[span]
+                hits[canonical] = category
+                i += length
+                matched = True
+                break
+
+        if not matched:
+            i += 1
+    return hits
+
+
+def get_top_word(jd):
+    splitted_jd = utils.jd_splitter(jd)
+
+    vectorizer = TfidfVectorizer(ngram_range=(1, 3), stop_words=utils.custom_stop_words(),
+                                 token_pattern=r"(?u)\b\w+(?:[-/+#'][\w+]*)*(?!\w)", norm=None)
+    vector = vectorizer.fit_transform(splitted_jd)
+
+    flatten_vec = vector.toarray().sum(axis=0)
+    idx = np.argsort(flatten_vec)
+    feature_name = vectorizer.get_feature_names_out()
+    top_word = feature_name[idx[-20:]]
+
+    return top_word
+
+
 def keyword_extract(jd):
-    taxonomy_hits = utils.match_taxonomy(jd, _REVERSE_LOOKUP, _MAX_LEN)
-    top_tfidf = [t.lower() for t in utils.get_top_word(jd)]
+    taxonomy_hits = match_taxonomy(jd)
+    top_tfidf = [t.lower() for t in get_top_word(jd)]
 
     categorized = {cat: [] for cat in CATEGORY}
     emphasized = []
@@ -39,33 +77,3 @@ def keyword_extract(jd):
         categorized[cat].sort()
 
     return {**categorized, 'emphasized': sorted(emphasized)}
-
-
-def test():
-    jd = '''We are looking for a Senior Backend Engineer to join our growing platform team.
-
-Responsibilities:
-- Design and build scalable REST APIs using Python and Flask
-- Collaborate closely with the team and cross-functional stakeholders
-- Own the full lifecycle of backend services from design to deployment
-- Deploy and monitor services using Docker and Kubernetes on AWS
-- Write and maintain CI/CD pipelines using Jenkins and GitHub Actions
-- Support the team during on-call rotations and incident response
-- Lead the team through agile sprint planning and backlog grooming
-- Optimize PostgreSQL queries and database schema design
-- Mentor junior engineers and support the team's technical growth
-- Communicate effectively with product managers and other teams
-
-Requirements:
-- 5+ years of experience building backend systems in Python
-- Strong experience with relational databases such as PostgreSQL or MySQL
-- Hands-on experience with Docker, Kubernetes, and infrastructure as code (Terraform)
-- Solid understanding of RESTful API design and microservices architecture
-- Experience with CI/CD tooling and automated testing practices
-- Excellent communication and collaboration skills
-- Strong problem-solving ability and sense of ownership
-- Familiarity with monitoring tools such as Datadog or Prometheus
-- Experience working in an Agile/Scrum environment
-- Bachelor's degree in Computer Science or equivalent practical experience'''
-
-    return keyword_extract(jd)
