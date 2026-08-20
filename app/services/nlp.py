@@ -1,4 +1,5 @@
 import json
+import re
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
 import app.services.service_utils as utils
@@ -46,6 +47,25 @@ def match_taxonomy(text):
     return hits
 
 
+def matched_missing_keywords(resume, jd):
+    jd_hits = match_taxonomy(jd)
+    resume_hits = match_taxonomy(resume)
+
+    missing_matched = {'missing_kw': [], 'matched_kw': []}
+
+    for category in CATEGORY:
+        jd_terms = {term for term, cat in jd_hits.items() if cat == category}
+        resume_terms = {term for term, cat in resume_hits.items() if cat == category}
+
+        sorted(jd_terms)
+        sorted(resume_terms)
+
+        missing_matched['missing_kw'].extend(jd_terms - resume_terms)
+        missing_matched['matched_kw'].extend(jd_terms & resume_terms)
+
+    return missing_matched
+
+
 def get_top_word(jd):
     splitted_jd = utils.jd_splitter(jd)
 
@@ -56,7 +76,7 @@ def get_top_word(jd):
     flatten_vec = vector.toarray().sum(axis=0)
     idx = np.argsort(flatten_vec)
     feature_name = vectorizer.get_feature_names_out()
-    top_word = feature_name[idx[-20:]]
+    top_word = feature_name[idx[:-10:-1]]
 
     return top_word
 
@@ -70,8 +90,11 @@ def keyword_extract(jd):
     for term, category in taxonomy_hits.items():
         categorized[category].append(term)
         term_lower = term.lower()
-        if any(term_lower in kw or kw in term_lower for kw in top_tfidf):
-            emphasized.append(term)
+        for kw in top_tfidf:
+            pattern = rf'(?<!\w){re.escape(kw)}(?!\w)'
+            if re.search(pattern, term_lower):
+                emphasized.append(term)
+                break
 
     for cat in categorized:
         categorized[cat].sort()
