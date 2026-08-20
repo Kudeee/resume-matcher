@@ -47,22 +47,6 @@ def match_taxonomy(text):
     return hits
 
 
-def matched_missing_keywords(resume, jd):
-    jd_hits = match_taxonomy(jd)
-    resume_hits = match_taxonomy(resume)
-
-    missing_matched = {'missing_kw': [], 'matched_kw': []}
-
-    for category in CATEGORY:
-        jd_terms = {term for term, cat in jd_hits.items() if cat == category}
-        resume_terms = {term for term, cat in resume_hits.items() if cat == category}
-
-        missing_matched['missing_kw'].extend(sorted(jd_terms - resume_terms))
-        missing_matched['matched_kw'].extend(sorted(jd_terms & resume_terms))
-
-    return missing_matched
-
-
 def get_top_word(jd):
     splitted_jd = utils.jd_splitter(jd)
 
