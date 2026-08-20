@@ -61,10 +61,6 @@ def extract_text_from_docx(file_path):
     return full_doc
 
 
-def test():
-    return extract_text_from_docx('test_resume/sample_resume.docx')
-
-
 def extract_text_from_pdf(file_path):
     try:
         full_doc = []
