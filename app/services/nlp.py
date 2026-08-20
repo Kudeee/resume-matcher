@@ -57,11 +57,8 @@ def matched_missing_keywords(resume, jd):
         jd_terms = {term for term, cat in jd_hits.items() if cat == category}
         resume_terms = {term for term, cat in resume_hits.items() if cat == category}
 
-        sorted(jd_terms)
-        sorted(resume_terms)
-
-        missing_matched['missing_kw'].extend(jd_terms - resume_terms)
-        missing_matched['matched_kw'].extend(jd_terms & resume_terms)
+        missing_matched['missing_kw'].extend(sorted(jd_terms - resume_terms))
+        missing_matched['matched_kw'].extend(sorted(jd_terms & resume_terms))
 
     return missing_matched
 
@@ -76,7 +73,7 @@ def get_top_word(jd):
     flatten_vec = vector.toarray().sum(axis=0)
     idx = np.argsort(flatten_vec)
     feature_name = vectorizer.get_feature_names_out()
-    top_word = feature_name[idx[:-10:-1]]
+    top_word = feature_name[idx[:-11:-1]]
 
     return top_word
 
