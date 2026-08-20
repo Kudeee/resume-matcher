@@ -21,23 +21,6 @@ def per_category_score(resume, jd):
     return category_scores
 
 
-def matched_missing_keywords(resume, jd):
-    jd_hits = nlp.match_taxonomy(jd)
-    resume_hits = nlp.match_taxonomy(resume)
-
-    matched_keywords = []
-    missing_keywords = []
-
-    for category in nlp.CATEGORY:
-        jd_terms = {term for term, cat in jd_hits.items() if cat == category}
-        resume_terms = {term for term, cat in resume_hits.items() if cat == category}
-
-        matched_keywords.append(jd_terms & resume_terms)
-        missing_keywords.append(jd_terms - resume_terms)
-
-    return zip(matched_keywords, missing_keywords)
-
-
 def overall_similarity(resume, jd):
     vectorizer = TfidfVectorizer(stop_words=utils.custom_stop_words(),
                                  token_pattern=r"(?u)\b\w+(?:[-/+#'|.—][\w+]+)*\b")
