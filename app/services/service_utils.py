@@ -1,10 +1,10 @@
 import numpy as np
 import re
-from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS, TfidfVectorizer
+from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 
 
 def normalize(text):
-    text = text.lower().replace('-', ' ').replace('/', ' ').replace('—', ' ')
+    text = text.lower()
     text = re.sub(r"[^\w\s+#]", ' ', text)
 
     return text.split()
@@ -12,7 +12,7 @@ def normalize(text):
 
 def custom_stop_words():
     custom_words = ENGLISH_STOP_WORDS.union(
-        ['responsibilities', 'requirements', 'qualifications', 'duties', 'description',
+        ['responsibilities', 'requirements', "we're", 'qualifications', 'duties', 'description',
          'overview', 'summary', 'role', 'position', 'title', 'apply', 'application',
          'applicant', 'candidate', 'candidates', 'resume', 'cv', 'submit', 'please',
          'contact', 'strong', 'excellent', 'proven', 'demonstrated', 'ability',
@@ -52,19 +52,6 @@ def jd_splitter(jd):
 
 
 # utils for parser
-def table_document(document):
-    full_text = []
-    if document.tables:
-        for table in document.tables:
-            for row in table.rows:
-                for cell in row.cells:
-                    for para in cell.paragraphs:
-                        full_text.append(para.text)
-        return full_text
-    else:
-        return False
-
-
 def find_column_boundary(page, resolution=2, min_rows=3):
     words = page.extract_words()
     if not words:
