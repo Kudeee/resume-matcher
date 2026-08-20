@@ -1,5 +1,7 @@
 import pdfplumber
-from . import service_utils as eu
+from docx.table import Table
+from docx.text.paragraph import Paragraph
+from . import service_utils as utils
 from docx import Document
 
 
@@ -44,12 +46,23 @@ def section_detector(text):
 
 def extract_text_from_docx(file_path):
     document = Document(file_path)
-    extracted_table_text = eu.table_document(document)
+    full_doc = []
 
-    if extracted_table_text:
-        return extracted_table_text
-    else:
-        return [paragraph.text for paragraph in document.paragraphs]
+    for block in document.iter_inner_content():
+        if isinstance(block, Paragraph):
+            full_doc.append(block.text)
+
+        elif isinstance(block, Table):
+            for row in block.rows:
+                for cell in row.cells:
+                    for para in cell.paragraphs:
+                        full_doc.append(para.text)
+
+    return full_doc
+
+
+def test():
+    return extract_text_from_docx('test_resume/sample_resume.docx')
 
 
 def extract_text_from_pdf(file_path):
@@ -57,23 +70,25 @@ def extract_text_from_pdf(file_path):
         full_doc = []
         with pdfplumber.open(file_path) as pdf:
             for page in pdf.pages:
-                boundary = eu.find_column_boundary(page)
+                boundary = utils.find_column_boundary(page)
                 if boundary:
                     left = page.within_bbox((0, 0, boundary, page.height))
                     right = page.within_bbox((boundary, 0, page.width, page.height))
                     l_text = left.extract_text() or ""
                     r_text = right.extract_text() or ""
                     full_text = l_text + "\n" + r_text
-                    full_doc = [
+                    doc = [
                         para.strip() for para in full_text.split("\n") if para.strip()
                     ]
-                    return full_doc
+                    full_doc.extend(doc)
                 else:
                     text = page.extract_text() or ""
-                    full_doc = [
+                    doc = [
                         para.strip() for para in text.split("\n") if para.strip()
                     ]
-                    return full_doc
+                    full_doc.extend(doc)
+
+        return full_doc
 
     except FileNotFoundError:
         return "File not found."
