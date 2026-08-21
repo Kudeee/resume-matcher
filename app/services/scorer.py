@@ -1,24 +1,33 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import app.services.service_utils as utils
-import app.services.nlp as nlp
+from app.services.nlp import CATEGORY
 
 CATEGORY_WEIGHTS = {'technical': 0.50, 'tools': 0.25, 'soft_skills': 0.15, 'domain': 0.10}
 
 
-def per_category_score(resume, jd):
-    jd_hits = nlp.match_taxonomy(jd)
-    resume_hits = nlp.match_taxonomy(resume)
-
+def per_category_score(resume_hits, jd_hits):
     category_scores = {}
 
-    for category in nlp.CATEGORY:
+    for category in CATEGORY:
         jd_terms = {term for term, cat in jd_hits.items() if cat == category}
         resume_terms = {term for term, cat in resume_hits.items() if cat == category}
 
         matched = jd_terms & resume_terms
         category_scores[category] = round(100 * len(matched) / len(jd_terms)) if jd_terms else None
     return category_scores
+
+
+def matched_missing_keywords(resume_hits, jd_hits):
+    missing_matched = {'missing_kw': [], 'matched_kw': []}
+
+    jd_terms = {term for term, cat in jd_hits.items()}
+    resume_terms = {term for term, cat in resume_hits.items()}
+
+    missing_matched['missing_kw'].extend(sorted(jd_terms - resume_terms))
+    missing_matched['matched_kw'].extend(sorted(jd_terms & resume_terms))
+
+    return missing_matched
 
 
 def overall_similarity(resume, jd):
