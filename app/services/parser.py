@@ -47,26 +47,46 @@ def section_detector(text):
 def extract_text_from_docx(file_path):
     document = Document(file_path)
     full_doc = []
+    formatting = {'issues': [], 'passed': True}
 
-    for block in document.iter_inner_content():
+    for idx, block in enumerate(document.iter_inner_content(), start=1):
+        current_block = {'block': idx, 'issue': []}
         if isinstance(block, Paragraph):
             full_doc.append(block.text)
+            if utils.paragraph_contains_image(block):
+                current_block['issue'].append('image')
 
         elif isinstance(block, Table):
+            current_block['issue'].append('table')
             for row in block.rows:
                 for cell in row.cells:
                     for para in cell.paragraphs:
                         full_doc.append(para.text)
+                        if utils.paragraph_contains_image(para):
+                            current_block['issue'].append('image inside the table')
+        if current_block['issue']:
+            formatting['issues'].append(current_block)
 
-    return full_doc
+    if formatting['issues']:
+        formatting['passed'] = False
+
+    return full_doc, formatting
 
 
 def extract_text_from_pdf(file_path):
     try:
         full_doc = []
+        formatting = {'issues': [], 'passed': True}
         with pdfplumber.open(file_path) as pdf:
-            for page in pdf.pages:
+            for idx, page in enumerate(pdf.pages, start=1):
                 boundary = utils.find_column_boundary(page)
+                current_page = {'page': idx, 'issue': []}
+
+                if page.images:
+                    current_page['issue'].append('image')
+                if page.find_table():
+                    current_page['issue'].append('table')
+
                 if boundary:
                     left = page.within_bbox((0, 0, boundary, page.height))
                     right = page.within_bbox((boundary, 0, page.width, page.height))
@@ -84,10 +104,25 @@ def extract_text_from_pdf(file_path):
                     ]
                     full_doc.extend(doc)
 
-        return full_doc
+                if current_page['issue']:
+                    formatting['issues'].append(current_page)
+
+        if formatting['issues']:
+            formatting['passed'] = False
+
+        return full_doc, formatting
 
     except FileNotFoundError:
         return "File not found."
 
     except ValueError:
         return "File is corrupted"
+
+
+def test():
+    t, f = extract_text_from_docx('test_resume/resume_docx_image_table.docx')
+    # t, f = extract_text_from_pdf('test_resume/resume_image_table.pdf')
+
+    print(f)
+
+    return 'a'
