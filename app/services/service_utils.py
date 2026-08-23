@@ -93,3 +93,11 @@ def find_column_boundary(page, resolution=2, min_rows=3):
         return None
 
     return boundary
+
+
+def paragraph_contains_image(paragraph):
+    return bool(
+        paragraph._p.xpath(
+            './w:r/w:drawing/*[self::wp:inline | self::wp:anchor]/a:graphic/a:graphicData/pic:pic'
+        )
+    )
