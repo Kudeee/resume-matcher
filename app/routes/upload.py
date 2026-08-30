@@ -1,5 +1,6 @@
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, jsonify, request
 import os
+import io
 import uuid
 from app.services import parser
 
@@ -22,8 +23,7 @@ def upload_resume():
 
     file_id = uuid.uuid4()
 
-    file_path = os.path.join(current_app.config["UPLOAD_DIR"], f"{file_id}{ext}")
-    file.save(file_path)
+    file_temp = io.BytesIO(file.read())
 
     try:
         extracted_file = []
