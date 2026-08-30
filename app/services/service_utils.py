@@ -39,7 +39,7 @@ def custom_stop_words():
          'values', 'vision', 'workplace', 'colleagues', 'people', 'mission-driven',
          'color', 'origin', 'national', 'sexual', 'orientation', 'gender', 'identity',
          'protected', 'status', 'harassment', 'compliance', 'eligibility', 'eligible',
-         'sponsorship', 'visa', 'science', 'systems',
+         'sponsorship', 'visa',
          'ensure', 'ensuring', 'including', 'include', 'includes', 'help', 'helping',
          'support', 'supporting', 'using', "team's", 'understanding', 'write',
          ])
@@ -48,7 +48,7 @@ def custom_stop_words():
 
 def jd_splitter(jd):
     text = re.sub(r'\n+', '\n', jd)
-    clean_text = re.split(r'(?<=[-*•])\s+', text)
+    clean_text = re.split(r'(?<=[-*•\n{2,}\s*])\s+', text)
 
     lines = [line.replace('\n', ' ').rstrip('-–—•*') for line in clean_text]
 
