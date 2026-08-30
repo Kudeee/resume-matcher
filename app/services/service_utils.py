@@ -10,6 +10,10 @@ def normalize(text):
     return text.split()
 
 
+def custom_tokken_pattern():
+    return r"(?u)\b\w+(?:[-/+#'][\w+]*)*(?!\w)"
+
+
 def custom_stop_words():
     custom_words = ENGLISH_STOP_WORDS.union(
         ['responsibilities', 'requirements', "we're", 'qualifications', 'duties', 'description',

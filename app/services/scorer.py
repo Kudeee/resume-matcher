@@ -32,7 +32,7 @@ def matched_missing_keywords(resume_hits, jd_hits):
 
 def overall_similarity(resume, jd):
     vectorizer = TfidfVectorizer(stop_words=utils.custom_stop_words(),
-                                 token_pattern=r"(?u)\b\w+(?:[-/+#'|.—][\w+]+)*\b")
+                                 token_pattern=utils.custom_tokken_pattern())
     vector = vectorizer.fit_transform([resume, jd])
     return cosine_similarity(vector[0], vector[1])[0][0]
 

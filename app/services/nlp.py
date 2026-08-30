@@ -51,7 +51,7 @@ def get_top_word(jd):
     splitted_jd = utils.jd_splitter(jd)
 
     vectorizer = TfidfVectorizer(ngram_range=(1, 3), stop_words=utils.custom_stop_words(),
-                                 token_pattern=r"(?u)\b\w+(?:[-/+#'][\w+]*)*(?!\w)", norm=None)
+                                 token_pattern=utils.custom_tokken_pattern(), norm=None)
     vector = vectorizer.fit_transform(splitted_jd)
 
     flatten_vec = vector.toarray().sum(axis=0)
