@@ -12,7 +12,9 @@ def create_app():
         return jsonify({"error": "file too large"}), 413
 
     from app.routes.upload import upload_bp
+    from app.routes.analyze import analyze_bp
 
     app.register_blueprint(upload_bp)
+    app.register_blueprint(analyze_bp)
 
     return app
