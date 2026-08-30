@@ -112,9 +112,6 @@ def extract_text_from_pdf(file_path):
 
         return full_doc, formatting
 
-    except FileNotFoundError:
-        return "File not found."
-
     except ValueError:
         return "File is corrupted"
 
