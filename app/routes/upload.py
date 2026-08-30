@@ -18,8 +18,8 @@ def upload_resume():
 
     root, ext = os.path.splitext(file.filename)
 
-    if ext not in ALLOWED_EXT:
-        return jsonify({"error": "file not acceted"}), 400
+    if ext.lower() not in ALLOWED_EXT:
+        return jsonify({"error": "file not accepted"}), 400
 
     file_id = uuid.uuid4()
 
@@ -27,14 +27,16 @@ def upload_resume():
 
     try:
         extracted_file = []
-        if ext == ".pdf":
-            extracted_file = parser.extract_text_from_pdf(file_path)
-        elif ext == ".docx":
-            extracted_file = parser.extract_text_from_docx(file_path)
+        formatting = {}
+        if ext.lower() == ".pdf":
+            extracted_file, formatting = parser.extract_text_from_pdf(file_temp)
+        elif ext.lower() == ".docx":
+            extracted_file, formatting = parser.extract_text_from_docx(file_temp)
 
         sections = parser.section_detector(extracted_file)
 
-        return jsonify({"sections": sections, "raw_text": extracted_file})
+        return jsonify(
+            {"resume_id": str(file_id), "sections": sections, "raw_text": extracted_file, "formatting": formatting})
 
     except Exception as e:
         print(e)
