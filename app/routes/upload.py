@@ -9,7 +9,7 @@ upload_bp = Blueprint("upload", __name__)
 
 @upload_bp.route("/api/upload", methods=["POST"])
 def upload_resume():
-    file = request.files.get("file")
+    file = request.files.get("resume")
 
     ALLOWED_EXT = {".pdf", ".docx"}
 
@@ -36,7 +36,7 @@ def upload_resume():
         sections = parser.section_detector(extracted_file)
 
         return jsonify(
-            {"resume_id": str(file_id), "sections": sections, "raw_text": extracted_file, "formatting": formatting})
+            {"resume_id": str(file_id), "sections": sections, "resume_text": extracted_file, "formatting": formatting})
 
     except Exception as e:
         print(e)

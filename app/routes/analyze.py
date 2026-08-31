@@ -11,7 +11,7 @@ def analyze():
     if data is None:
         return jsonify({"error": "request did not get anything"}), 400
 
-    raw_text = data.get('raw_text')
+    raw_text = data.get('resume_text')
     jd_text = data.get('jd_text')
     formatting = data.get('formatting')
 
