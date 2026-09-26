@@ -3,6 +3,7 @@ import os
 import io
 import uuid
 from app.services import parser
+from app.exceptions import AppError, NoFileProvidedError, UnsupportedFileTypeError, ParsingError
 
 upload_bp = Blueprint("upload", __name__)
 
@@ -14,12 +15,12 @@ def upload_resume():
     ALLOWED_EXT = {".pdf", ".docx"}
 
     if file is None or not file.filename:
-        return jsonify({"error": "no file added"}), 400
+        raise NoFileProvidedError()
 
     root, ext = os.path.splitext(file.filename)
 
     if ext.lower() not in ALLOWED_EXT:
-        return jsonify({"error": "file not accepted"}), 400
+        raise UnsupportedFileTypeError(f"'{ext}' is not a supported file type. Please upload a PDF or DOCX.")
 
     file_id = uuid.uuid4()
 
@@ -38,6 +39,8 @@ def upload_resume():
         return jsonify(
             {"resume_id": str(file_id), "sections": sections, "resume_text": extracted_file, "formatting": formatting})
 
+    except AppError:
+        raise
     except Exception as e:
         print(e)
-        return jsonify({"error": "failed to process file"}), 500
+        raise ParsingError()

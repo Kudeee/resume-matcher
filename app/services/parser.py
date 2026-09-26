@@ -3,20 +3,69 @@ from docx.table import Table
 from docx.text.paragraph import Paragraph
 from . import service_utils as utils
 from docx import Document
+from app.exceptions import CorruptedFileError
 
 
 def section_detector(text):
     SECTION_ALIASES = {
-        "summary": ["summary", "objective", "profile"],
-        "experience": [
-            "experience",
-            "work history",
-            "professional experience",
-            "employment",
+        "summary": [
+            "summary", "objective", "profile", "professional summary",
+            "career objective", "career summary", "about me",
         ],
-        "skills": ["skills", "technical skills", "core competencies"],
-        "education": ["education", "academic background"],
-        "projects": ["projects", "personal projects"],
+        "experience": [
+            "experience", "work history", "professional experience",
+            "employment", "work experience", "employment history",
+            "relevant experience",
+        ],
+        "skills": [
+            "skills", "technical skills", "core competencies", "key skills",
+            "areas of expertise", "skills summary", "competencies",
+        ],
+        "education": [
+            "education", "academic background", "educational background",
+            "academic qualifications",
+        ],
+        "projects": [
+            "projects", "personal projects", "academic projects",
+            "key projects", "notable projects",
+        ],
+        "certifications": [
+            "certifications", "certificates", "licenses",
+            "licenses and certifications", "certifications and licenses",
+            "professional certifications",
+        ],
+        "awards": [
+            "awards", "honors", "honors and awards", "awards and honors",
+            "achievements", "accomplishments",
+        ],
+        "languages": [
+            "languages", "language proficiency", "language skills",
+        ],
+        "volunteer": [
+            "volunteer experience", "volunteering", "volunteer work",
+            "community service", "community involvement",
+        ],
+        "publications": [
+            "publications", "research publications", "papers",
+        ],
+        "leadership": [
+            "leadership", "leadership experience",
+        ],
+        "affiliations": [
+            "affiliations", "professional affiliations", "memberships",
+            "professional memberships", "associations",
+        ],
+        "courses": [
+            "courses", "coursework", "relevant coursework", "training",
+            "training and certifications",
+        ],
+        "activities": [
+            "activities", "extracurricular activities", "interests",
+            "hobbies", "hobbies and interests", "clubs and organizations",
+        ],
+        "references": [
+            "references",
+        ],
     }
 
     alias_to_canonical = {
@@ -29,7 +78,7 @@ def section_detector(text):
     current_section = "head"
 
     for section in text:
-        s = section.rstrip(":-–— ").lower()
+        s = section.strip(" \t:-–—•*→").lower()
         if s in alias_to_canonical:
             current_section = alias_to_canonical[s]
             continue
@@ -113,13 +162,4 @@ def extract_text_from_pdf(file_path):
         return full_doc, formatting
 
     except ValueError:
-        return "File is corrupted"
-
-
-def test():
-    t, f = extract_text_from_docx('test_resume/resume_docx_image_table.docx')
-    # t, f = extract_text_from_pdf('test_resume/resume_image_table.pdf')
-
-    print(f)
-
-    return 'a'
+        raise CorruptedFileError()

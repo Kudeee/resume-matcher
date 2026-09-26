@@ -1,0 +1,124 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Resume/JD Matcher</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<body>
+
+<div class="app">
+
+    <header class="site-header">
+        <p class="logo">Resume<span class="logo-accent">Matcher</span></p>
+    </header>
+
+    <main>
+        <!-- Upload Interface -->
+        <section class="upload-section" id="upload-section">
+
+            <div class="upload-grid">
+
+                <div class="upload-card">
+                    <h2 class="card-title">Resume</h2>
+
+                    <div class="dropzone" id="dropzone" role="button" tabindex="0"
+                         aria-label="Upload resume PDF, drag and drop or press enter to browse">
+                        <input type="file" id="file-input" accept="application/pdf" hidden>
+                        <svg class="dropzone-icon" width="40" height="40" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke-linecap="round"
+                                  stroke-linejoin="round"/>
+                        </svg>
+                        <p class="dropzone-text">Drag &amp; drop your resume here</p>
+                        <p class="dropzone-subtext">or <span class="link-text">browse files</span> — PDF only, max 5MB
+                        </p>
+                    </div>
+
+                    <p class="file-feedback" id="file-feedback" aria-live="polite"></p>
+                </div>
+
+                <div class="upload-card">
+                    <h2 class="card-title">Job Description</h2>
+                    <textarea
+                            id="jd-textarea"
+                            class="jd-textarea"
+                            placeholder="Paste the job description here..."
+                            maxlength="5000"
+                            aria-label="Job description"
+                    ></textarea>
+                    <p class="char-counter"><span id="char-count">0</span> / 5000</p>
+                </div>
+
+            </div>
+
+            <button class="analyze-btn" id="analyze-btn" disabled>
+                <span class="btn-text">Analyze</span>
+                <span class="btn-spinner" hidden aria-hidden="true"></span>
+            </button>
+
+        </section>
+
+        <!-- Dashboard -->
+        <section class="results-section" id="results-section" hidden>
+
+            <div class="score-block">
+
+                <div class="score-ring-wrap" id="score-ring-wrap">
+                    <svg class="score-ring" viewBox="0 0 200 200">
+                        <circle class="score-ring-track" cx="100" cy="100" r="85"/>
+                        <circle class="score-ring-fill" id="score-ring-fill" cx="100" cy="100" r="85"/>
+                    </svg>
+                    <div class="score-value">
+                        <span id="score-number">0</span><span class="score-percent">%</span>
+                    </div>
+                </div>
+
+                <div class="score-meta">
+                    <p class="score-label">Match Score</p>
+                    <p class="score-band" id="score-band">—</p>
+                </div>
+
+            </div>
+
+            <div class="dashboard-grid">
+
+                <div class="panel radar-panel">
+                    <h3 class="panel-title">Skill Alignment</h3>
+                    <canvas id="radar-chart" height="260"></canvas>
+                </div>
+
+                <div class="panel keywords-panel">
+                    <div class="keyword-group">
+                        <h3 class="panel-title">Matched Keywords</h3>
+                        <div class="pill-list" id="matched-keywords"></div>
+                    </div>
+                    <div class="keyword-group">
+                        <h3 class="panel-title">Missing Keywords</h3>
+                        <div class="pill-list" id="missing-keywords"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="panel ats-panel">
+                <h3 class="panel-title">ATS Formatting Checklist</h3>
+                <ul class="ats-checklist" id="ats-checklist"></ul>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/results.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>
