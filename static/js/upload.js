@@ -1,6 +1,6 @@
 (function () {
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-    const ACCEPTED_TYPE = 'application/pdf';
+    const ACCEPTED_TYPE = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
     const JD_MAX_CHARS = 5000;
 
     const dropzone = document.getElementById('dropzone');
@@ -27,9 +27,11 @@
     }
 
     function validateFile(file) {
-        const isPdf = file.type === ACCEPTED_TYPE || file.name.toLowerCase().endsWith('.pdf');
-        if (!isPdf) {
-            return {valid: false, message: 'Only PDF files are supported.'};
+        const isPdf = ACCEPTED_TYPE.includes(file.type) || file.name.toLowerCase().endsWith('.pdf');
+        const isDocx = ACCEPTED_TYPE.includes(file.type) || file.name.toLowerCase().endsWith('.docx');
+
+        if (!isPdf || !isDocx) {
+            return {valid: false, message: 'Only PDF and Docx files are supported.'};
         }
         if (file.size > MAX_FILE_SIZE) {
             return {valid: false, message: `File is too large (${formatBytes(file.size)}). Max size is 5MB.`};
