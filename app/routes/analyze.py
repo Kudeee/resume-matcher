@@ -9,7 +9,7 @@ analyze_bp = Blueprint('analyze', __name__)
 def analyze():
     data = request.get_json(silent=True)
 
-    if data is None:
+    if not isinstance(data, dict):
         raise InvalidRequestError("Request body must be JSON.")
 
     raw_text = data.get('resume_text')
